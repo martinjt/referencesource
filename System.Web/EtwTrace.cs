@@ -213,9 +213,10 @@ namespace System.Web {
         internal static void TraceEnableCheck(EtwTraceConfigType configType, IntPtr p)
         {
             // Don't activate if webengine.dll isn't loaded
+#if !CROSS_PLATFORM
             if (!HttpRuntime.IsEngineLoaded)
                 return;
-            
+#endif            
             switch (configType) {
                 case EtwTraceConfigType.IIS7_INTEGRATED:
                     bool f;
