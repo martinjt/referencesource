@@ -27,15 +27,21 @@ namespace System.Web {
     using System.Web;
     using System.Web.Compilation;
     using System.Web.Configuration;
+#if !CROSS_PLATFORM
     using System.Web.Configuration.Common;
-    using System.Web.Hosting;
+#endif
+	using System.Web.Hosting;
     using System.Web.Management;
     using System.Web.Security;
     using System.Web.SessionState;
     using System.Web.UI;
     using System.Web.Util;
+#if !CROSS_PLATFORM
     using IIS = System.Web.Hosting.UnsafeIISMethods;
-
+#endif
+#if CROSS_PLATFORM
+	using System.Diagnostics;
+#endif
 
     //
     // Async EventHandler support
@@ -1229,8 +1235,10 @@ namespace System.Web {
                 // without replacing them then we need to give a more descriptive error than
                 // a null parameter exception.
                 if (type == null) {
+#if !CROSS_PLATFORM
                     PerfCounters.IncrementCounter(AppPerfCounter.REQUESTS_NOT_FOUND);
                     PerfCounters.IncrementCounter(AppPerfCounter.REQUESTS_FAILED);
+#endif
                     throw new HttpException(SR.GetString(SR.Http_handler_not_found_for_request_type, requestType));
                 }
 
@@ -1290,8 +1298,10 @@ namespace System.Web {
                 // without replacing them then we need to give a more descriptive error than
                 // a null parameter exception.
                 if (mapping == null) {
+#if !CROSS_PLATFORM
                     PerfCounters.IncrementCounter(AppPerfCounter.REQUESTS_NOT_FOUND);
                     PerfCounters.IncrementCounter(AppPerfCounter.REQUESTS_FAILED);
+#endif
                     throw new HttpException(SR.GetString(SR.Http_handler_not_found_for_request_type, requestType));
                 }
 
@@ -2546,7 +2556,7 @@ namespace System.Web {
         //
         // Request mappings management functions
         //
-
+		#if !CROSS_PLATFORM
         private IHttpHandlerFactory GetFactory(HttpHandlerAction mapping) {
             HandlerFactoryCache entry = (HandlerFactoryCache)_handlerFactories[mapping.Type];
             if (entry == null) {
@@ -2581,7 +2591,7 @@ namespace System.Web {
                 _handlerRecycleList = null;
             }
         }
-
+		#endif
         /*
          * Special exception to cancel module execution (not really an exception)
          * used in Response.End and when cancelling requests
@@ -2616,7 +2626,9 @@ namespace System.Web {
         }
 
         internal IAsyncResult BeginProcessRequestNotification(HttpContext context, AsyncCallback cb) {
+			#if !CROSS_PLATFORM
             Debug.Trace("PipelineRuntime", "BeginProcessRequestNotification");
+			#endif
 
             HttpAsyncResult result;
 
@@ -2661,13 +2673,14 @@ namespace System.Web {
                     HttpRuntime.RequestTimeoutManager.Remove(_context);
                     _timeoutManagerInitialized = false;
                 }
-
+				#if !CROSS_PLATFORM
                 if(HttpRuntime.EnablePrefetchOptimization && 
                    HttpRuntime.InitializationException == null && 
                    _context.FirstRequest && 
                    _context.Error == null) {
                         UnsafeNativeMethods.EndPrefetchActivity((uint)HttpRuntime.AppDomainAppId.GetHashCode());
                 }
+				#endif
             }
             RecycleHandlers();
             if (AsyncResult != null) {

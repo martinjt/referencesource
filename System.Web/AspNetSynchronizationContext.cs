@@ -11,6 +11,9 @@ namespace System.Web {
     using System.Runtime.ExceptionServices;
     using System.Threading;
     using System.Web.Util;
+#if CROSS_PLATFORM
+	using System.Diagnostics;
+#endif
 
     internal sealed class AspNetSynchronizationContext : AspNetSynchronizationContextBase {
 

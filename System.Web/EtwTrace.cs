@@ -197,12 +197,14 @@ namespace System.Web {
             if (workerRequest is IIS7WorkerRequest) {
                 s_WrType = EtwWorkerRequestType.IIS7Integrated;
             }
+#if !CROSS_PLATFORM
             else if (workerRequest is ISAPIWorkerRequestInProc) {
                     s_WrType = EtwWorkerRequestType.InProc;
             }
             else if (workerRequest is ISAPIWorkerRequestOutOfProc){
                 s_WrType = EtwWorkerRequestType.OutOfProc;
             }
+#endif
             else {
                 s_WrType = EtwWorkerRequestType.Unknown;
             }
@@ -217,16 +219,16 @@ namespace System.Web {
             switch (configType) {
                 case EtwTraceConfigType.IIS7_INTEGRATED:
                     bool f;
-                    UnsafeIISMethods.MgdEtwGetTraceConfig(p /*pRequestContext*/, out f, out _traceFlags, out _traceLevel);
+                    //UnsafeIISMethods.MgdEtwGetTraceConfig(p /*pRequestContext*/, out f, out _traceFlags, out _traceLevel);
                     break;
                 case EtwTraceConfigType.IIS7_ISAPI:
                     int[] contentInfo = new int[3];
-                    UnsafeNativeMethods.EcbGetTraceFlags(p /*pECB*/, contentInfo);
+                    //UnsafeNativeMethods.EcbGetTraceFlags(p /*pECB*/, contentInfo);
                     _traceFlags = contentInfo[0];
                     _traceLevel = contentInfo[1];
                     break;
                 case EtwTraceConfigType.DOWNLEVEL:
-                    UnsafeNativeMethods.GetEtwValues(out _traceLevel, out _traceFlags);
+                    //UnsafeNativeMethods.GetEtwValues(out _traceLevel, out _traceFlags);
                     break;
                 default:
                     break;
@@ -259,7 +261,7 @@ namespace System.Web {
 
             if (workerRequest == null)
                 return;
-            
+#if !CROSS_PLATFORM
             if (s_WrType == EtwWorkerRequestType.IIS7Integrated) {
                 UnsafeNativeMethods.TraceRaiseEventMgdHandler((int) traceType, ((IIS7WorkerRequest)workerRequest).RequestContext, data1, data2, data3, data4);
             }
@@ -269,14 +271,17 @@ namespace System.Web {
             else if (s_WrType == EtwWorkerRequestType.OutOfProc) {
                 UnsafeNativeMethods.PMTraceRaiseEvent((int) traceType, ((ISAPIWorkerRequest)workerRequest).Ecb, data1, data2, data3, data4);
             }
+#endif
         }
 
         internal static void Trace(EtwTraceType traceType, IntPtr ecb, string data1, string data2, bool inProc)
         {
+#if !CROSS_PLATFORM
             if (inProc)
                 UnsafeNativeMethods.TraceRaiseEventWithEcb((int) traceType, ecb, data1, data2, null, null);
             else 
                 UnsafeNativeMethods.PMTraceRaiseEvent((int) traceType, ecb, data1, data2, null, null);
+#endif
         }
 
     };
