@@ -119,7 +119,11 @@ namespace System.Web {
                 return false;
 
             HttpRequest request = (context != null) ? context.Request : null;
+#if !CROSS_PLATFORM 
             if (context != null && context.WorkerRequest is System.Web.SessionState.StateHttpWorkerRequest)
+#else
+			if (context != null)
+#endif
                 return false;
 
             // Request.Browser might throw if the configuration file has some
@@ -169,7 +173,9 @@ namespace System.Web {
             // It is because some mobile devices/browsers can display a page
             // content only if it is a normal response instead of response that
             // has error status code.
+#if !CROSS_PLATFORM
             context.Response.UseAdaptiveError = true;
+#endif
 
             try {
                 Page page = new ErrorFormatterPage();
@@ -1077,7 +1083,11 @@ namespace System.Web {
 
                                 // Remember the file/line number of the top level stack
                                 // item for which we have symbols
+								#if !CROSS_PLATFORM
                                 if (_physicalPath == null && FileUtil.FileExists(fileName)) {
+								#else
+								if (_physicalPath == null && System.IO.File.Exists(fileName)) {
+								#endif
                                     _physicalPath = fileName;
 
                                     _line = sf.GetFileLineNumber();
@@ -1855,8 +1865,10 @@ namespace System.Web {
         internal ConfigErrorFormatter(System.Configuration.ConfigurationException e)
         : base(null /*virtualPath*/, e.Filename, null, e.Line) {
             _e = e;
+			#if !CROSS_PLATFORM
             PerfCounters.IncrementCounter(AppPerfCounter.ERRORS_PRE_PROCESSING);
             PerfCounters.IncrementCounter(AppPerfCounter.ERRORS_TOTAL);
+			#endif
             _message = HttpUtility.FormatPlainTextAsHtml(e.BareMessage);
             _adaptiveMiscContent.Add(_message);
         }

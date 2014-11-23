@@ -250,7 +250,7 @@ namespace System.Web.Configuration {
             _properties.Add(_propPingFrequency);
             _properties.Add(_propPingTimeout);
             _properties.Add(_propMaxAppDomains);
-            cpuCount = SystemInfo.GetNumProcessCPUs();
+			cpuCount = 2;//SystemInfo.GetNumProcessCPUs();
         }
 
         public ProcessModelSection() {

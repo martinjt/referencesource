@@ -525,7 +525,9 @@ namespace System.Web {
                     return null;
 
                 // Demand path discovery before returning the path (ASURT 123798)
+				#if !CROSS_PLATFORM
                 InternalSecurityPermissions.PathDiscovery(physicalPath).Demand();
+				#endif
                 return physicalPath;
             } 
         }

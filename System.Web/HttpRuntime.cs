@@ -185,7 +185,7 @@ namespace System.Web {
         private PolicyLevel _policyLevel;
         private string _hostSecurityPolicyResolverType = null;
         private FileChangesMonitor _fcm;
-        private CacheInternal _cacheInternal;
+        private Cache _cacheInternal;
         private Cache _cachePublic;
         private bool _isOnUNCShare;
         private Profiler _profiler;
@@ -326,17 +326,19 @@ namespace System.Web {
                     _appDomainId = GetAppDomainString(".domainId");
 
                     _isOnUNCShare = StringUtil.StringStartsWith(_appDomainAppPath, "\\\\");
-
+					#if !CROSS_PLATFORM
                     // init perf counters for this appdomain
                     PerfCounters.Open(_appDomainAppId);
+					#endif
                 }
                 else {
                     Debug.Assert(!HostingEnvironment.IsHosted);
                 }
-
+				#if !CROSS_PLATFORM
                 // _appDomainAppPath should be set before file change notifications are initialized
                 // DevDiv 248126: Check httpRuntime fcnMode first before we use the registry key
                 _fcm = new FileChangesMonitor(HostingEnvironment.FcnMode);
+				#endif
             }
             catch (Exception e) {
                 // remember static initalization error
@@ -450,12 +452,14 @@ namespace System.Web {
                     // the policy file, because it needs to replace the $CodeGen$ token.
                     SetUpCodegenDirectory(compilationSection);
 
+					#if !CROSS_PLATFORM
                     if(compilationSection != null) {
                         _enablePrefetchOptimization = compilationSection.EnablePrefetchOptimization;
                         if(_enablePrefetchOptimization) {
                             UnsafeNativeMethods.StartPrefetchActivity((uint)StringUtil.GetStringHashCode(_appDomainAppId));
                         }
                     }
+					#endif
 
                     // NOTE: after calling SetUpCodegenDirectory(), and until we call SetTrustLevel(), we are at
                     // risk of codegen assemblies being loaded in full trust.  No code that might cause
@@ -470,7 +474,7 @@ namespace System.Web {
                     if (trustSection == null || String.IsNullOrEmpty(trustSection.Level)) {
                         throw new ConfigurationErrorsException(SR.GetString(SR.Config_section_not_present, "trust"));
                     }
-
+					//#if !CROSS_PLATFORM
                     if (trustSection.LegacyCasModel) {
                         try {
                             _disableProcessRequestInApplicationTrust = false;
@@ -1139,9 +1143,10 @@ namespace System.Web {
          */
         [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         private void PreloadAssembliesFromBin() {
+			#if !CROSS_PLATFORM
             bool appClientImpersonationEnabled = false;
 
-            if (!_isOnUNCShare) {
+			if (!_isOnUNCShare) {
                 // if not on UNC share check if config has impersonation enabled (without userName)
                 IdentitySection c = RuntimeConfig.GetAppConfig().Identity;
                 if (c.Impersonate && c.ImpersonateToken == IntPtr.Zero)
@@ -1150,7 +1155,7 @@ namespace System.Web {
 
             if (!appClientImpersonationEnabled)
                 return;
-
+			#endif
             // Get the path to the bin directory
             string binPath = HttpRuntime.BinDirectoryInternal;
 
@@ -1188,12 +1193,13 @@ namespace System.Web {
             // check if the current limits are ok
             int workerMax, ioMax;
             ThreadPool.GetMaxThreads(out workerMax, out ioMax);
-
+			#if !CROSS_PLATFORM
             // only set if different
             if (pmConfig.DefaultMaxWorkerThreadsForAutoConfig != workerMax || pmConfig.DefaultMaxIoThreadsForAutoConfig != ioMax) {
                 Debug.Trace("ThreadPool", "SetThreadLimit: from " + workerMax + "," + ioMax + " to " + pmConfig.DefaultMaxWorkerThreadsForAutoConfig + "," + pmConfig.DefaultMaxIoThreadsForAutoConfig);
                 UnsafeNativeMethods.SetClrThreadPoolLimits(pmConfig.DefaultMaxWorkerThreadsForAutoConfig, pmConfig.DefaultMaxIoThreadsForAutoConfig, true);
             }
+			#endif
 
             // this is the code equivalent of setting maxconnection
             // Dev11 141729: Make autoConfig scale by default
@@ -1215,12 +1221,13 @@ namespace System.Web {
                     // check if the current limits are ok
                     int workerMax, ioMax;
                     ThreadPool.GetMaxThreads(out workerMax, out ioMax);
-
+					#if !CROSS_PLATFORM
                     // only set if different
                     if (pmConfig.MaxWorkerThreadsTimesCpuCount != workerMax || pmConfig.MaxIoThreadsTimesCpuCount != ioMax) {
                         Debug.Trace("ThreadPool", "SetThreadLimit: from " + workerMax + "," + ioMax + " to " + pmConfig.MaxWorkerThreadsTimesCpuCount + "," + pmConfig.MaxIoThreadsTimesCpuCount);
                         UnsafeNativeMethods.SetClrThreadPoolLimits(pmConfig.MaxWorkerThreadsTimesCpuCount, pmConfig.MaxIoThreadsTimesCpuCount, false);
                     }
+					#endif
                 }
 
                 if (pmConfig.MinWorkerThreadsTimesCpuCount > 0 || pmConfig.MinIoThreadsTimesCpuCount > 0) {
@@ -1295,6 +1302,7 @@ namespace System.Web {
         private void CheckAccessToTempDirectory() {
             // The original check (in HostingInit) was done under process identity
             // this time we do it under hosting identity
+			#if !CROSS_PLATFORM
             if (HostingEnvironment.HasHostingIdentity) {
                 using (new ApplicationImpersonationContext()) {
                     if (!System.Web.UI.Util.HasWriteAccessToDirectory(_tempDir)) {
@@ -1303,6 +1311,11 @@ namespace System.Web {
                     }
                 }
             }
+			#else
+			if (!System.Web.UI.Util.HasWriteAccessToDirectory(_tempDir)) {
+				throw new HttpException(SR.GetString(SR.No_codegen_access, "mono process", _tempDir));
+			}
+			#endif
         }
 
         private void InitializeHealthMonitoring() {
@@ -1386,17 +1399,16 @@ namespace System.Web {
             if (IsEngineLoaded) {
                 uint dwVersion;
                 bool fIsIntegratedMode;
+				#if !CROSS_PLATFORM
                 UnsafeIISMethods.MgdGetIISVersionInformation(out dwVersion, out fIsIntegratedMode);
-
+				#endif
                 if (dwVersion != 0) {
                     // High word is the major version; low word is the minor version (this is MAKELONG format)
                     _iisVersion = new Version((int)(dwVersion >> 16), (int)(dwVersion & 0xffff));
                     _useIntegratedPipeline = fIsIntegratedMode;
                 }
             }
-        }
-
-        // Gets the version of IIS (7.0, 7.5, 8.0, etc.) that is hosting this application, or null if this application isn't IIS-hosted.
+        }        // Gets the version of IIS (7.0, 7.5, 8.0, etc.) that is hosting this application, or null if this application isn't IIS-hosted.
         // Should also return the correct version for IIS Express.
         public static Version IISVersion {
             get {
@@ -1428,7 +1440,7 @@ namespace System.Web {
          * Process one step of the integrated pipeline
          *
          */
-
+		#if !CROSS_PLATFORM
         internal static RequestNotificationStatus ProcessRequestNotification(IIS7WorkerRequest wr, HttpContext context)
         {
             return _theRuntime.ProcessRequestNotificationPrivate(wr, context);
@@ -1575,7 +1587,7 @@ namespace System.Web {
                 PipelineRuntime.DisposeHandler(context, requestContext, status);
             }
         }
-
+		#endif
         internal static void FinishPipelineRequest(HttpContext context) {
             // Remember that first request is done
             _theRuntime._firstRequestCompleted = true;
@@ -2821,12 +2833,12 @@ namespace System.Web {
             }
         }
 
-        internal static CacheInternal GetCacheInternal(bool createIfDoesNotExist) {
+        internal static Cache GetCacheInternal(bool createIfDoesNotExist) {
             // Note that we only create the cache on first access,
             // not in HttpRuntime initialization.
             // This prevents cache timers from running when
             // the cache is not used.
-            CacheInternal cacheInternal = _theRuntime._cacheInternal;
+            Cache cacheInternal = _theRuntime._cacheInternal;
             if (cacheInternal == null && createIfDoesNotExist) {
                 _theRuntime.CreateCache();
                 cacheInternal = _theRuntime._cacheInternal;
@@ -2835,7 +2847,7 @@ namespace System.Web {
             return cacheInternal;
         }
 
-        internal static CacheInternal CacheInternal {
+        internal static Cache CacheInternal {
             get { return GetCacheInternal(createIfDoesNotExist: true); }
         }
 

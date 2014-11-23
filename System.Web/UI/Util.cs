@@ -38,6 +38,7 @@ namespace System.Web.UI {
     using Debug = System.Web.Util.Debug;
 
 internal static class Util {
+		#if !CROSS_PLATFORM
     private static string[] s_invalidCultureNames = new string[] { "aspx", "ascx", "master" };
 
     [SecurityPermission(SecurityAction.Assert, Flags = SecurityPermissionFlag.SerializationFormatter)]
@@ -284,7 +285,7 @@ internal static class Util {
 
         return fileName;
     }
-
+		#endif
     /*
      * Return true if the current user has write access to the directory
      */
@@ -296,8 +297,12 @@ internal static class Util {
 
         // Get the path to a dummy file in that directory
         string dummyFile = Path.Combine(dir, "~AspAccessCheck_" +
+				#if !CROSS_PLATFORM
             HostingEnvironment.AppDomainUniqueInteger.ToString(
                 "x", CultureInfo.InvariantCulture) + SafeNativeMethods.GetCurrentThreadId() + ".tmp");
+				#else
+				Guid.NewGuid().ToString() + ".tmp");
+			#endif
         FileStream fs = null;
 
         bool success = false;
@@ -318,7 +323,7 @@ internal static class Util {
 
         return success;
     }
-
+		#if !CROSS_PLATFORM
     internal static VirtualPath GetScriptLocation() {
         // prepare script include
         // Dev10 Bug564221: we need to detect if app level web.config overwrites the root web.config
@@ -1724,7 +1729,7 @@ internal static class Util {
     }
 
 #endif // DBG
-
+		#endif
 }
 
 }

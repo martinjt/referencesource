@@ -11,6 +11,7 @@
  */
 
 namespace System.Web.Util {
+	using System;
     using System.Diagnostics;
     using System.Globalization;
     using System.Reflection;
@@ -32,8 +33,8 @@ namespace System.Web.Util {
         private VersionInfo() {
         }
 
-        [FileIOPermission(SecurityAction.Assert, Unrestricted = true)]
-        internal static string GetFileVersion(String filename) {
+        //[FileIOPermission(SecurityAction.Assert, Unrestricted = true)]
+        internal static string GetFileVersion(string filename) {
 #if !FEATURE_PAL // FEATURE_PAL does not fully support FileVersionInfo
             try {
                 FileVersionInfo ver = FileVersionInfo.GetVersionInfo(filename);
@@ -45,7 +46,7 @@ namespace System.Web.Util {
             }
 #else // !FEATURE_PAL
             // ROTORTODO
-            return String.Empty;
+            return string.Empty;
 #endif // !FEATURE_PAL
 
         }
@@ -66,12 +67,12 @@ namespace System.Web.Util {
             return fileName;
 #else // !FEATURE_PAL
             // ROTORTODO
-            return String.Empty;
+            return string.Empty;
 #endif // !FEATURE_PAL
         }
 
         internal static string GetLoadedModuleVersion(string module) {
-            String filename = GetLoadedModuleFileName(module);
+            string filename = GetLoadedModuleFileName(module);
             if (filename == null)
                 return null;
             return GetFileVersion(filename);
@@ -79,13 +80,17 @@ namespace System.Web.Util {
 
         internal static string SystemWebVersion {
             get {
+#if !CROSS_PLATFORM
                 return ThisAssembly.InformationalVersion;
-            }
+#else
+				return "4.0.0.0";
+#endif            
+			}
         }
 
         internal static string EngineVersion {
-#if !FEATURE_PAL // FEATURE_PAL does not enable IIS-based hosting features
             get {
+				#if !FEATURE_PAL // FEATURE_PAL does not enable IIS-based hosting features
                 if (_engineVersion == null) {
                     lock(_lock) {
                         if (_engineVersion == null)

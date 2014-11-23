@@ -28,7 +28,9 @@ namespace System.Web.Util {
         internal static long Value {
             get {
                 long count = 0;
+				#if !CROSS_PLATFORM
                 SafeNativeMethods.QueryPerformanceCounter(ref count);
+				#endif
                 return count;
             }
         }
@@ -40,7 +42,9 @@ namespace System.Web.Util {
         internal static long Frequency {
             get {
                 long freq = 0;
+				#if !CROSS_PLATFORM
                 SafeNativeMethods.QueryPerformanceFrequency(ref freq);
+				#endif
                 return freq;
             }
         }

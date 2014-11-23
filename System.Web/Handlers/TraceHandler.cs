@@ -97,9 +97,11 @@ namespace System.Web.Handlers {
             _writer = Page.CreateHtmlTextWriterInternal(_response.Output, _request);
 
             // if we're in integrated mode, we need to set the content type explicitly
+			#if !CROSS_PLATFORM
             if (context.WorkerRequest is IIS7WorkerRequest) {
                 _response.ContentType = _request.Browser.PreferredRenderingMime;
             }
+			#endif
 
             if (_writer == null) {
                 // Can't create a writer, horked at this point, just return

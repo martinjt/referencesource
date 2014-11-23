@@ -194,20 +194,22 @@ namespace System.Web {
 
         private static void ResolveWorkerRequestType(HttpWorkerRequest workerRequest)
         {
+			#if !CROSS_PLATFORM
             if (workerRequest is IIS7WorkerRequest) {
                 s_WrType = EtwWorkerRequestType.IIS7Integrated;
             }
-#if !CROSS_PLATFORM
             else if (workerRequest is ISAPIWorkerRequestInProc) {
                     s_WrType = EtwWorkerRequestType.InProc;
             }
             else if (workerRequest is ISAPIWorkerRequestOutOfProc){
                 s_WrType = EtwWorkerRequestType.OutOfProc;
             }
-#endif
             else {
+			#endif
                 s_WrType = EtwWorkerRequestType.Unknown;
+			#if !CROSS_PLATFORM
             }
+			#endif
         }
 
         internal static void TraceEnableCheck(EtwTraceConfigType configType, IntPtr p)

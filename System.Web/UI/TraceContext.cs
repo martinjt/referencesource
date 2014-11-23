@@ -321,9 +321,11 @@ namespace System.Web {
                 }
 
                 // Send to IIS tracing
+				#if !CROSS_PLATFORM
                 if (_context != null && _context.WorkerRequest != null) {
                     _context.WorkerRequest.RaiseTraceEvent(isWarning ? IntegratedTraceType.TraceWarn : IntegratedTraceType.TraceWrite, msg);
                 }
+				#endif
                 
             }
 
