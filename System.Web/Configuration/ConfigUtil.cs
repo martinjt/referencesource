@@ -57,7 +57,7 @@ namespace System.Web.Configuration {
                     }
                 }
             }
-
+			#if !CROSS_PLATFORM
             // If we're not in full trust, only allow types that have the APTCA bit (ASURT 139687),
             // unless the checkAptcaBit flag is false
             if (checkAptcaBit) {
@@ -70,6 +70,7 @@ namespace System.Web.Configuration {
                         propertyName);
                 }
             }
+			#endif
 
             return val;
         }

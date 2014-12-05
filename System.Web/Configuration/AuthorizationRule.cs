@@ -17,6 +17,7 @@ namespace System.Web.Configuration {
     using System.Web.Util;
     using System.ComponentModel;
     using System.Security.Permissions;
+	using System.Web;
 
     public sealed class AuthorizationRule : ConfigurationElement {
         private static readonly TypeConverter s_PropConverter = new CommaDelimitedStringCollectionConverter();
@@ -353,7 +354,11 @@ namespace System.Web.Configuration {
 
             if (StringUtil.StringStartsWith(name, @".\")) {
                 if (machineName == null) {
+#if !CROSS_PLATFORM
                     machineName = HttpServerUtility.GetMachineNameInternal().ToLower(CultureInfo.InvariantCulture);
+#else
+					machineName = HttpServerUtility.MachineName.ToLower(CultureInfo.InvariantCulture);
+#endif
                 }
 
                 ExpandedName = machineName + name.Substring(1);
@@ -517,11 +522,13 @@ namespace System.Web.Configuration {
         }
 
         private bool IsTheUserInAnyRole(StringCollection roles, IPrincipal principal) {
+#if !CROSS_PLATFORM // Trusted application is windows only.
             if (!HttpRuntime.DisableProcessRequestInApplicationTrust) {
                 if (HttpRuntime.NamedPermissionSet != null && HttpRuntime.ProcessRequestInApplicationTrust) {
                     HttpRuntime.NamedPermissionSet.PermitOnly();
                 }
             }
+#endif
             
             foreach (string role in roles) {
                 if (principal.IsInRole(role)) {

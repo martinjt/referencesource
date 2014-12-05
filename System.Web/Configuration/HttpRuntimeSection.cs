@@ -787,7 +787,11 @@ namespace System.Web.Configuration {
                     String header = null;
                     // construct once (race condition here doesn't matter)
                     try {
+#if !CROSS_PLATFORM //TODO: Need to check the hardcoded string
                         String version = VersionInfo.SystemWebVersion;
+#else
+						String version = "4.0.0.0";
+#endif
                         int i = version.LastIndexOf('.');
                         if (i > 0) {
                             header = version.Substring(0, i);

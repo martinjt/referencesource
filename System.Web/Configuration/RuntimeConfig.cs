@@ -36,6 +36,7 @@ namespace System.Web.Configuration {
         // may return null, non-null, or throw an exception.
         //
         static internal RuntimeConfig GetConfig() {
+#if !CROSS_PLATFORM
             if (!HttpConfigurationSystem.UseHttpConfigurationSystem)  {
                 return GetClientRuntimeConfig();
             }
@@ -47,6 +48,9 @@ namespace System.Web.Configuration {
             else {
                 return GetAppConfig();
             }
+#else
+			return GetClientRuntimeConfig();
+#endif
         }
 
         //
@@ -61,11 +65,15 @@ namespace System.Web.Configuration {
         //
         [System.Runtime.TargetedPatchingOptOut("Performance critical to inline across NGen image boundaries")]
         static internal RuntimeConfig GetConfig(HttpContext context) {
+#if !CROSS_PLATFORM
             if (!HttpConfigurationSystem.UseHttpConfigurationSystem)  {
                 return GetClientRuntimeConfig();
             }
 
-            return context.GetRuntimeConfig();
+			return context.GetRuntimeConfig();
+#else
+			return GetClientRuntimeConfig();
+#endif
         }
 
         //
@@ -82,11 +90,15 @@ namespace System.Web.Configuration {
         // may return null, non-null, or throw an exception.
         //
         static internal RuntimeConfig GetConfig(HttpContext context, VirtualPath path) {
-            if (!HttpConfigurationSystem.UseHttpConfigurationSystem)  {
-                return GetClientRuntimeConfig();
-            }
+#if !CROSS_PLATFORM
+			if (!HttpConfigurationSystem.UseHttpConfigurationSystem) {
+			return GetClientRuntimeConfig();
+			}
 
-            return context.GetRuntimeConfig(path);
+			return context.GetRuntimeConfig(path);
+#else
+			return GetClientRuntimeConfig();
+#endif
         }
 
         //
@@ -109,11 +121,15 @@ namespace System.Web.Configuration {
         }
 
         static internal RuntimeConfig GetConfig(VirtualPath path) {
+#if !CROSS_PLATFORM
             if (!HttpConfigurationSystem.UseHttpConfigurationSystem) {
                 return GetClientRuntimeConfig();
             }
 
             return CachedPathData.GetVirtualPathData(path, true).RuntimeConfig;
+#else
+			return GetClientRuntimeConfig();
+#endif
         }
 
         //
@@ -126,11 +142,15 @@ namespace System.Web.Configuration {
         // may return null, non-null, or throw an exception.
         //
         static internal RuntimeConfig GetAppConfig() {
+#if !CROSS_PLATFORM
             if (!HttpConfigurationSystem.UseHttpConfigurationSystem)  {
                 return GetClientRuntimeConfig();
             }
 
             return CachedPathData.GetApplicationPathData().RuntimeConfig;
+#else
+			return GetClientRuntimeConfig();
+#endif
         }
 
         //
@@ -143,12 +163,16 @@ namespace System.Web.Configuration {
         // may return null, non-null, or throw an exception.
         //
         static internal RuntimeConfig GetRootWebConfig() {
+#if !CROSS_PLATFORM
             if (!HttpConfigurationSystem.UseHttpConfigurationSystem)  {
                 return GetClientRuntimeConfig();
             }
 
             return CachedPathData.GetRootWebPathData().RuntimeConfig;
-        }
+#else
+			return GetClientRuntimeConfig();
+#endif
+		}
 
         //
         // GetMachineConfig() - returns the machine configuration.
@@ -160,11 +184,15 @@ namespace System.Web.Configuration {
         // may return null, non-null, or throw an exception.
         //
         static internal RuntimeConfig GetMachineConfig() {
+#if !CROSS_PLATFORM
             if (!HttpConfigurationSystem.UseHttpConfigurationSystem)  {
                 return GetClientRuntimeConfig();
             }
 
             return CachedPathData.GetMachinePathData().RuntimeConfig;
+#else
+			return GetClientRuntimeConfig();
+#endif
         }
 
         //

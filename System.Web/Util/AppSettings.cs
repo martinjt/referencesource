@@ -138,13 +138,13 @@ namespace System.Web.Util {
             if (!HostingEnvironment.IsHosted) {
                 return ConfigurationManager.AppSettings;
             }
-
+			#if !CROSS_PLATFORM //TODO: Need to work out if this is needed or not.
             // Check the app-level config. Ignore configuration errors
             CachedPathData appPathData = CachedPathData.GetApplicationPathData();
 
             if (appPathData != null && appPathData.ConfigRecord != null)
                 return appPathData.ConfigRecord.GetSection("appSettings") as NameValueCollection;
-
+			#endif
             // nothing found
             return null;
         }

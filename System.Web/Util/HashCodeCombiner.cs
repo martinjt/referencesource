@@ -50,11 +50,13 @@ internal class HashCodeCombiner {
         return CombineHashCodes(CombineHashCodes(h1, h2, h3, h4), h5);
     }
 
+#if !CROSS_PLATFORM
     internal static string GetDirectoryHash(VirtualPath virtualDir) {
         HashCodeCombiner hashCodeCombiner = new HashCodeCombiner();
         hashCodeCombiner.AddDirectory(virtualDir.MapPathInternal());
         return hashCodeCombiner.CombinedHashString;
     }
+#endif
 
     internal void AddArray(string[] a) {
         if (a != null) {
@@ -199,6 +201,7 @@ internal class HashCodeCombiner {
         AddObject(directoryName);
 
         // Go through all the files in the directory
+#if !CROSS_PLATFORM
         foreach (FileData fileData in FileEnumerator.Create(directoryName)) {
 
             if (fileData.IsDirectory)
@@ -206,7 +209,14 @@ internal class HashCodeCombiner {
             else
                 AddExistingFile(fileData.FullName);
         }
-
+#else
+		foreach (FileInfo fileData in Directory.GetFiles(directoryName)) {
+			AddExistingFile(fileData.FullName);
+		}
+		foreach (DirectoryInfo dirData in Directory.GetDirectories(directoryName)) {
+			AddDirectory(dirData.FullName);
+		}
+#endif
         if (!AppSettings.PortableCompilationOutput) {
             AddDateTime(directory.CreationTimeUtc);
             AddDateTime(directory.LastWriteTimeUtc);
@@ -224,6 +234,7 @@ internal class HashCodeCombiner {
         AddObject(directoryName);
 
         // Go through all the files in the directory
+#if !CROSS_PLATFORM
         foreach (FileData fileData in FileEnumerator.Create(directoryName)) {
 
             if (fileData.IsDirectory)
@@ -237,13 +248,23 @@ internal class HashCodeCombiner {
                 }
             }
         }
-
+#else
+		foreach (FileInfo fileData in Directory.GetFiles(directoryName)) {
+			string fullPath = fileData.FullName;
+			if (System.Web.UI.Util.GetCultureName(fullPath) == null) {
+				AddExistingFile(fullPath);
+			}
+		}
+		foreach (DirectoryInfo dirData in Directory.GetDirectories(directoryName)) {
+			AddResourcesDirectory(dirData.FullName);
+		}
+#endif
         if (!AppSettings.PortableCompilationOutput) {
             AddDateTime(directory.CreationTimeUtc);
         }
     }
 
-    internal long CombinedHash { get { return _combinedHash; } }
+	internal long CombinedHash { get { return _combinedHash; } }
     internal int CombinedHash32 { get { return _combinedHash.GetHashCode(); } }
 
     internal string CombinedHashString {

@@ -161,11 +161,13 @@ namespace System.Web.Configuration {
         // this should only happen at runtime since the design time machine does not
         // need Passport installed to configure the server.
         internal void ValidateAuthenticationMode() {
+#if !CROSS_PLATFORM // passport service is only available for windows.
 #pragma warning disable 618
             if (Mode == AuthenticationMode.Passport && UnsafeNativeMethods.PassportVersion() < 0) {
 #pragma warning restore 618
                 throw new ConfigurationErrorsException(SR.GetString(SR.Passport_not_installed));
             }
+#endif
         }
     }
 }
