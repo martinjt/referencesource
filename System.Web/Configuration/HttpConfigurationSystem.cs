@@ -249,7 +249,7 @@ namespace System.Web.Configuration {
         static internal void AddFileDependency(String file) {
             if (String.IsNullOrEmpty(file))
                 return;
-#if !FEATURE_PAL // No file change notification in Coriolis
+#if !FEATURE_PAL && !MONO // No file change notification in Coriolis
             if (UseHttpConfigurationSystem) {
                 if (s_fileChangeEventHandler == null) {
                     s_fileChangeEventHandler = new FileChangeEventHandler(s_httpConfigSystem.OnConfigFileChanged);
@@ -283,7 +283,7 @@ namespace System.Web.Configuration {
         static internal string MachineConfigurationDirectory {
             get {
                 if (s_MachineConfigurationDirectory == null) {
-#if !FEATURE_PAL
+#if !FEATURE_PAL && !MONO
                     s_MachineConfigurationDirectory = Path.Combine(MsCorLibDirectory, MachineConfigSubdirectory);
 #else // !FEATURE_PAL
                     System.UInt32 length = 0;

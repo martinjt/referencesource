@@ -10,7 +10,7 @@ namespace System.Web.Configuration {
     using System.Configuration;
     using System.Runtime.Versioning;
     using System.Text;
-    using System.Web.Security.AntiXss;
+//    using System.Web.Security.AntiXss;
     using System.Web.Util;
 
     public sealed class HttpRuntimeSection : ConfigurationSection {

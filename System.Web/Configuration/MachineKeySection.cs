@@ -18,7 +18,7 @@ namespace System.Web.Configuration
     using System.Security.Permissions;
     using System.Text;
     using System.Web.Hosting;
-    using System.Web.Security.Cryptography;
+//    using System.Web.Security.Cryptography;
     using System.Web.Util;
     using System.Xml;
 

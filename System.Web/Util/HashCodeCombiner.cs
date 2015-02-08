@@ -16,7 +16,7 @@ using System.IO;
 using System.Globalization;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Web.Security.Cryptography;
+//using System.Web.Security.Cryptography;
 
 /*
  * Class used to combine several hashcodes into a single hashcode

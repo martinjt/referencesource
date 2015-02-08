@@ -87,7 +87,7 @@ namespace System.Web {
 #endif
     }
 
-#if !FEATURE_PAL // FEATURE_PAL does not enable access control
+#if !FEATURE_PAL && !MONO // FEATURE_PAL does not enable access control
     sealed class FileSecurity {
         const int DACL_INFORMATION = 
                 UnsafeNativeMethods.DACL_SECURITY_INFORMATION |
@@ -1395,7 +1395,7 @@ namespace System.Web {
     // Provides file change notification services in ASP.NET 
     //
     sealed class FileChangesMonitor {
-#if !FEATURE_PAL // FEATURE_PAL does not enable file change notification
+#if !FEATURE_PAL && !MONO // FEATURE_PAL does not enable file change notification
         internal static string[] s_dirsToMonitor = new string[] {
             HttpRuntime.BinDirectoryName,
             HttpRuntime.ResourcesDirectoryName,
